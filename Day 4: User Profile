@@ -1,1 +1,26 @@
+app.get('/api/users/me', authMiddleware, async (req, res) => {
+    const user = await User.findById)(req.user.userid).select('-password');
+     res.json(user);
+});
 
+app.put('/api/users/me', authMiddleware, async (req, res) =>{
+    const allowedUpdates = ['name','email','bio','avatar'];
+    const updates = {};
+
+    allowedUpdates.forEach(field =>{
+          if (req.body[field] !== undefined)updates[field] = req.body[field];
+      });
+    const user = await User.findByIdAndUpdate(
+          req.user.userId,
+          updates,
+          { new: true, runValidators: true}
+    ).select('-password');
+
+    res.json(user);
+});
+
+app.get('/api/users/:id/posts', async (req, res) => {
+    const posts = await Post.find({ author : req.params.id })
+        .sort({ createdAt: -1 });
+     res.json(posts);
+});
