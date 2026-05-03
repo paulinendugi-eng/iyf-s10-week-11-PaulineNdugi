@@ -1,1 +1,12 @@
+app.post('/test', async (req, res) =>{
+    const doc = await Test.create({name: req.body.name});
+    res.json(doc);
+});
+
+app.get('/test', async (req, res) =>{
+    res.json(docs);
+});
+
+ 
+
 
