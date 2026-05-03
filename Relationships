@@ -1,1 +1,65 @@
+const postSchema = new mongoose.Schema({
+     comments: [{
+        type: mongoose,Schema,Types.ObjectId,
+        ref: 'Comment'
+     }]
+});
+postSchema.virtual('commentList',
+      ref: 'Comment',
+      localField: '-id',
+      foreignField: 'post'
+});
+postSchema.set('toJSON', { virtuals: true }
+
+
+const Comment = require('../models/Comment');
+const Post = require('../models/Posts');
+const getComments = async (req, res, next) => {
+     try {
+          const comments = await Comment.find({ post:  req.params.postId})
+                .sort({ createdAt: -1 });
+          res.json(comments);
+     } catch (error) {
+           next(error);
+     }
+};
+const createComment = async (req, res, next) => {
+     try {
+         const { content, author } = req.body;
+         const postId = req.params.postId;
+         const post = await Post.findById({postId);
+         if (!post) {
+             return res.status.status(404).json({ error: 'Post not fouind' });
+          }
+         const comment = new Comment({
+               content,
+               author,
+               post: postId
+         });
+         await comment.save();
+         res.status(201).json(comment);
+    } catch (error) {
+           next(error);
+    }
+};
+const deleteComment = async (req, res, next) => {
+     try {
+         const comment = await Comment.findByIdDelete(req.params.commentId);
+         if (!comment) {   
+              return res.status(404).json({ error: 'Comment not found'});
+          }
+          res.status(204).send();
+      } catch (error) {
+           next(error);
+      }
+};
+module.exports = { getComments, createComment. deleteComment };
+const express = require('express');
+const router = express.Router();
+router.get('/:postId/comments', commentController.getComments);
+router.get('/:postId/comment', commentsConroller.createComment);
+router.delete('/:postId/comment/:commentId', commentsController.deleteComment);module.exports = router;
+
+ 
+     
 
