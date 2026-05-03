@@ -1,3 +1,134 @@
+const Post = require('../models/Posts');
+const getAllPosts = async (req, res, next)
+     try {
+         const { author, search, sort, page = 1, limit = 10 } = req.query;
+         let query ={};
+         if (author) {
+             query.author = new RegExp(author, 'i');
+         }
+         if (search) {
+            query.text = { $search: search };
+         }
+         let sortOption = { ceratedAt: -1 };
+         if  (sortOption === 'oldest') {
+              sortOption = { creatAt: 1 };
+         } else if  {sort === 'popular') {
+              sortOption = { likes:  -1};
+         }
+const skip = (parseInt(page) -1) * parseInt(limit);
+const limitNum = parseInt(limit);
+const posts = await Post.find(query)
+     .sort(sortOption)
+     .skip(skip)
+     .limit(limitNum);
+const total = await Post.countDocuments(query);
+res.json({
+    posts,
+    pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total/ limitNum)
+          }
+    });
+ } catch (error) {
+     next(error);
+};
+const createPost = async (req, res, next) = {
+     try {
+          const { title, content, author, tags } = req.body;
+          const post = new Post({
+              title,
+              content,
+              author,
+              tags: tags || []
+           });
+           await post.save();
+           res.status(201).json(post);
+     } catch (error) {
+           if (error.name === 'ValidationError'){
+               const messages = Object.values(error.errors).map((e) => e.message);
+               return res.status(400).json({ errors: messages });
+           }
+           next(error);
+        }
+};
+const updatePost = async (req,res, next) => {
+    try {
+        const { titlez, content, author, tags } = req.body;
+        const post = await PostfindByIdAndUpdate(
+             req.params.id,
+             { title, content, author, tags, updatedAt: Date.now() },
+             { new: true, runValidators: true }
+         };
+         if (!post) {
+             return res.status(404).json({ error: 'Post not found' });
+         }
+         res.json(post);
+     } catch (error) {
+          if (error.name === 'ValidationError') {
+             const messages = Object.values(error.errors).map((e) => e.message);
+             return res.status(400).json({ errors: message });
+          }
+          if (error.name === 'CastError') {
+             return res.status(400).json({ error: 'Invalid post ID' });
+           }
+           next(error);
+       }
+};
+const deletePost =async (req, res, next) => {
+     try {
+         const post = await Post.findByIdAndDelete(req.paramas.id);
+         if (!post) {
+             return res.status(404).json({ error: 'Post not found' });
+         }
+         res.status(204).send();
+      } catch (error) {
+          if (error.name === 'CastError') {
+              return res.status(400).json({ error: 'Invalid post ID' });
+         }
+         next(error);
+      }
+
+};
+const likePost = async (req, res, next) => {
+     try {
+          const post = await Post.findBy(req.params.id);
+         if (!post) {
+        return res.status(404).json({ error: 'Post not found' });
+         if (typeof post.like === 'function' ){
+         await post.like();
+         } else {
+           post.likes = (post.likes || 0) + 1;
+           await post.save();
+         }
+      res.json(post);
+     } catch (error) {
+         if (error.name === 'CastError' ) {
+            return res.status(400).json({ error: 'Invalid post ID' });
+         }
+         next(error);
+     }
+};
+ module.exports ={
+       getAllPosts,
+       getPostById,
+       createPost,
+       updatePost,
+       deletePost,
+       likePost,
+};
+
+
+     
+
+         
+
+
+
+
+
+
 
 
  
