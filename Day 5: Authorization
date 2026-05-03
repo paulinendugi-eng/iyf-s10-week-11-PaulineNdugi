@@ -1,1 +1,36 @@
+const userSchema = new mongoose.Schema({
+   email: String,
+   password: String,
+   role: { type: String, enum: ['user', 'admin'], default: 'user'}
+});
+
+const authorizePost = async (req, res, next) => {
+   const post = await Post.findById(req.params.id);
+   if (!post) return res.status(404).json({ error: 'Post not found'});
+
+   const isOwner = post.author.toString() === req.user.userId;
+   const isAdmin = req.user.role === 'admin';
+
+   if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: 'Unauthorized: You can only edit your own posts'});
+   }
+
+   req.post = post;
+   next();
+};
+
+app.put('/api/posts/:id', authMiddleware, authorizePost, async (req, res) => {
+   const updated = await Post.findByIdAndUpdate(
+      req.params.id,
+      { content : req.body.content },
+      { new : true }
+   );
+   res.json(updated);
+});
+
+app.delete('/api/posts/:id', authMiddleware, authorizePost, async (req, res) => {
+   await Post.findByIdAndDelete(req.params.id);
+   res.json({ message: 'Post deleted' });
+});
+
 
