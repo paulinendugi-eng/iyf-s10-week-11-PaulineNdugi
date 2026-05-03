@@ -1,3 +1,59 @@
+const mongoose = require('mongoose');
+const postSchema = new mongoose.Schema({
+      title: {
+           type: String,
+           required: [true, 'Title is required'],
+           trim: true,
+           minilength: [3, 'Title must be at least 3 characters'],
+           maxlength: [200, 'Title cannot exceed 200 characters'    ]
+     },
+     content: {
+           type: String,
+           required: [10, 'Content must be at least 10 characters']
+     },
+     author: {
+         type: String,
+         required: [true, 'Author is required']
+     },
+     likes: {
+         type: Number,
+         default: 0
+     },
+     tags: [{
+          type: String,
+          trim: true,
+     }]
+}, {
+    timestamps: true
+});
+module.exports = mongoose.model('Post', postSchema);
+
+
+
+const Comment = require('./src/models/Comment');
+const Post = require('./src/models/Post');
+const createComment = async (postId) => {
+     try {
+         const comment = await Comment.create({
+              content: 'Great post! Very informative.',
+              author: 'Jane Smith',
+              post: postId
+         });
+         console.log('Comment created:', comment);
+     } catch (error) {
+         console.log('Error: ', error);
+     }
+};
+const getCommentWithPost = ansync () => {
+     const comments = await Comment.find().populate('post');
+     console.log(comments);
+};
+
+
+
+
+
+
 
 
 
