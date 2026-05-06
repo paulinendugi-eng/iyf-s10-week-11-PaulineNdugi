@@ -39,34 +39,8 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = async function(candidatePassword) {
    return await bcrypt.compare(candidatePassword, this.password);
 }; 
-module.exports = mongoose.model('User', useSchema);
+module.exports = mongoose.model('User', userSchema);
 
-
-const express = require('express');
-const router = express.Router();
-const postController = require ('../controller');
-const {protect, restrictTo} = require ('../middleware/auth' );
-router.get('/' postsController.getAllPosts);
-router.get('/:id', postsController.getPostById);
-router.post('/', protect,postsController.createPost);
-router.patch('/:id',. protect, postsController.updatePost);
-router.delete('/:id', protect, postaConrltroller.deletePost);
-router.delete('/:id,/forceDelete', protect, restrictTo('admin'), postsController.forceDelete);
-module.exports = router;
-
-const protect = (req, res, next) => {
-    if (!req.user) return res.status(401).json({ error: 'Not logged in' });
-    next();
-};
-const restrictTo = (...roles) => {
-  return (req,res, next) => {
-    if (!roles.includes(req.user.role)) {
-       return res.status(403).json({ error: 'Access denied' });
-    }
-    next();
-  };
-};
-module.exports = { protect, restrictTo };
 
 
 
