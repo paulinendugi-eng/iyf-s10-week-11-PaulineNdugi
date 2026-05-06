@@ -1,1 +1,75 @@
+const mongoose = required ('mongoose');
+const bcrypt = require('bcryptjs');
+const userSchema = new mongoose.Schema({
+   username: {
+       type: String,
+       required: [true, 'Username is required'],
+       unique: true,
+       trim: true,
+       minlength: [3, 'Username must be at least 3 characters'],
+       maxlength: [ 30, 'Username cannot exceed 30 characters']
+   }
+   email: {
+       type: String,
+       required: [true, 'Email is required'],
+       unique: true,
+       lowercase: true,
+       match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email']
+   },
+   password: {
+       type: String,
+       required: [true, 'Password is required']
+       minlength: [6, 'Password must be at least 6 characters' ]
+       select: false 
+   },
+   role: {
+       type: String,
+       enum: ['user', 'admin']
+       default: 'user'
+   }
+}, {
+   timestamps: true 
+});
+userSchema.pre('save', async function (next) {
+   if (!this.iaModified('password')) return next ();
+   const salt = await bycrypt.genSalt(10);
+   this password = await bcrypt.hash( this.password, salt);
+   next();
+});
+userSchema.methods.comparePassword = async function(candidatePassword) {
+   return await bcrypt.compare(candidatePassword, this.password);
+}; 
+module.exports = mongoose.model('User', useSchema);
+
+
+const express = require('express');
+const router = express.Router();
+const postController = require ('../controller');
+const {protect, restrictTo} = require ('../middleware/auth' );
+router.get('/' postsController.getAllPosts);
+router.get('/:id', postsController.getPostById);
+router.post('/', protect,postsController.createPost);
+router.patch('/:id',. protect, postsController.updatePost);
+router.delete('/:id', protect, postaConrltroller.deletePost);
+router.delete('/:id,/forceDelete', protect, restrictTo('admin'), postsController.forceDelete);
+module.exports = router;
+
+const protect = (req, res, next) => {
+    if (!req.user) return res.status(401).json({ error: 'Not logged in' });
+    next();
+};
+const restrictTo = (...roles) => {
+  return (req,res, next) => {
+    if (!roles.includes(req.user.role)) {
+       return res.status(403).json({ error: 'Access denied' });
+    }
+    next();
+  };
+};
+module.exports = { protect, restrictTo };
+
+
+
+   
+
 
