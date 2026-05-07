@@ -59,6 +59,21 @@ const login= async (req, res) => {
       res.status(500).json({ error: 'Internal server error' })
    }
 };
+const getMe = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        res.json({
+        id:user._id,
+        username:user.username,
+        email:user.email,
+        role:user.role,
+        });
+    }   catch (error) {
+        res.status(500).json ({ error: 'Internal server error'});
+    }
+
+        
+
 
      
 
