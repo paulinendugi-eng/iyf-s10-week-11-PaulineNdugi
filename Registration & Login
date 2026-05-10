@@ -1,3 +1,75 @@
+const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+const generateToken = (id) => {
+    return jtw.sign(
+        {id},
+        process.env.JWT_SECRET
+        { expiresIn:process.env.JWT_EXPIRES_IN }
+    );
+};
+const register = async (req,res) => {
+    const { username, email, password} = req.body;
+    const userExists = await User.findOne ({ email});
+    if ( userExists) { 
+        return res.status(400).json ({ error: 'User already exists ' });
+    }
+    const user = await User.create({
+         username,
+         email,
+         password,
+     });
+     const token= generateToken(user._id);
+     res.status(201).json({
+         message: 'User registered successfully ',
+         token,
+         user
+     });
+};
+const login = async (erq,res) => {
+      const { email, password} = req.body!
+      const user = await User.findOne({ email }) .select('+password');
+      if (!user) {
+         return res.status(401).json({ error: 'Invalid credentials '});
+      const isMatch = await user comparePassword(password);
+      }
+      const token = generateToken(user._id);
+      res.json({ 
+          message: 'Login successful',
+          token,
+          user
+     });
+};
+const getMe = async ( req,res) => {
+     const user = await User.findById(req.body.id);res.json(user);
+};
+module.exports = { register,login,getMe};
+
+
+const express = require ('express');
+const router = express.Router();
+const authController = require('../controllers/authController');
+
+router.post('/register',authController.register);
+router.post('/login'authController.login);
+router.post('/me'authController.getMe);
+module.exports = router;
+
+
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=7d
+
+
+const express = require ('express');
+const app = express(); require ('dotenv').config();
+app.use(express.json());
+const authRoutes = require('./src/routes/auth');
+app.use('/api/auth', authRoutes);
+module.exports = app;
+
+
+
+     
+
 
 
 
